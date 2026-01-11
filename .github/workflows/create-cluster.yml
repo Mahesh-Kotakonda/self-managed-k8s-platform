@@ -58,10 +58,10 @@ jobs:
       # 6. Wait for SSH to be ready on control plane
       # -------------------------------------------------
       - name: Wait for SSH (control plane)
-        shell: bash
         run: |
           CONTROL_PLANE_IP=$(terraform -chdir=terraform output -raw control_plane_ip)
-          bash scripts/wait-for-ssh.sh "$CONTROL_PLANE_IP"
+          ./scripts/wait-for-ssh.sh "$CONTROL_PLANE_IP"
+
 
 
 
@@ -124,6 +124,7 @@ jobs:
         with:
           name: kubeconfig
           path: kubeconfig
+
 
 
 
