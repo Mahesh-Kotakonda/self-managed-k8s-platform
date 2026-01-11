@@ -19,7 +19,7 @@ variable "public_subnet_cidr" {
 variable "instance_type" {
   description = "EC2 instance type for all nodes"
   type        = string
-  default     = "t3.medium"
+  default     = "c7i-flex.large"
 }
 
 variable "worker_count" {
@@ -33,5 +33,6 @@ variable "key_name" {
   type        = string
   default     = "k8s_key_pair"
 }
+
 
 
