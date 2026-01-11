@@ -74,21 +74,21 @@ jobs:
       # -------------------------------------------------
       - name: Bootstrap Kubernetes Nodes
         run: |
-          ansible-playbook ansible/playbooks/bootstrap.yml
+          ansible-playbook -i ansible/inventory/inventory.ini ansible/playbooks/bootstrap.yml
 
       # -------------------------------------------------
       # 8. Initialize Control Plane
       # -------------------------------------------------
       - name: Initialize Control Plane
         run: |
-          ansible-playbook ansible/playbooks/control-plane.yml
+          ansible-playbook -i ansible/inventory/inventory.ini ansible/playbooks/control-plane.yml
 
       # -------------------------------------------------
       # 9. Join Worker Nodes
       # -------------------------------------------------
       - name: Join Worker Nodes
         run: |
-          ansible-playbook ansible/playbooks/workers.yml
+          ansible-playbook -i ansible/inventory/inventory.ini ansible/playbooks/workers.yml
 
       # -------------------------------------------------
       # 10. Install Calico CNI
@@ -128,6 +128,7 @@ jobs:
         with:
           name: kubeconfig
           path: kubeconfig
+
 
 
 
