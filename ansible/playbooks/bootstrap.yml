@@ -1,0 +1,8 @@
+- name: Bootstrap Kubernetes nodes
+  hosts: all
+  become: yes
+
+  roles:
+    - common
+    - containerd
+    - kubernetes
