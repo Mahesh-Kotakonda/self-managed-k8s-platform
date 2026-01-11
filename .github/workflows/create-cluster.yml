@@ -60,6 +60,7 @@ jobs:
       - name: Wait for SSH (control plane)
         run: |
           CONTROL_PLANE_IP=$(terraform -chdir=terraform output -raw control_plane_ip)
+          chmod +x scripts/wait-for-ssh.sh
           ./scripts/wait-for-ssh.sh "$CONTROL_PLANE_IP"
 
 
@@ -124,6 +125,7 @@ jobs:
         with:
           name: kubeconfig
           path: kubeconfig
+
 
 
 
