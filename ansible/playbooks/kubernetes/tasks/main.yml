@@ -27,14 +27,11 @@
     update_cache: yes
 
 - name: Hold kube packages
-  apt:
-    name:
-      - kubelet
-      - kubeadm
-      - kubectl
-    mark_hold: yes
+  command: apt-mark hold kubelet kubeadm kubectl
+  changed_when: false
 
 - name: Enable kubelet
   systemd:
     name: kubelet
     enabled: yes
+
