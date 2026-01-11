@@ -1,0 +1,37 @@
+- name: Initialize Kubernetes control plane
+  hosts: control_plane
+  become: yes
+
+  tasks:
+    - name: Initialize cluster with kubeadm
+      command: kubeadm init --pod-network-cidr=192.168.0.0/16
+      args:
+        creates: /etc/kubernetes/admin.conf
+
+    - name: Create kubeconfig directory
+      file:
+        path: /home/ubuntu/.kube
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: 0755
+
+    - name: Copy kubeconfig
+      copy:
+        src: /etc/kubernetes/admin.conf
+        dest: /home/ubuntu/.kube/config
+        remote_src: yes
+        owner: ubuntu
+        group: ubuntu
+
+    - name: Generate join command
+      command: kubeadm token create --print-join-command
+      register: join_cmd
+
+    - name: Save join command
+      copy:
+        dest: /tmp/kubeadm_join.sh
+        content: |
+          #!/bin/bash
+          {{ join_cmd.stdout }}
+        mode: 0755
