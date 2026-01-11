@@ -1,0 +1,48 @@
+name: Destroy Kubernetes Cluster
+
+on:
+  schedule:
+    # Runs every day at 8:00 PM IST (14:30 UTC)
+    - cron: "30 14 * * *"
+
+  # Allow manual trigger too (VERY useful)
+  workflow_dispatch:
+
+jobs:
+  destroy:
+    name: Destroy self-managed Kubernetes cluster
+    runs-on: self-hosted
+
+    env:
+      AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      AWS_DEFAULT_REGION: ${{ secrets.AWS_DEFAULT_REGION }}
+
+      TF_IN_AUTOMATION: "true"
+
+    steps:
+      # -------------------------------------------------
+      # 1. Checkout repository
+      # -------------------------------------------------
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      # -------------------------------------------------
+      # 2. Verify Terraform
+      # -------------------------------------------------
+      - name: Verify Terraform
+        run: terraform version
+
+      # -------------------------------------------------
+      # 3. Terraform Init
+      # -------------------------------------------------
+      - name: Terraform Init
+        working-directory: terraform
+        run: terraform init
+
+      # -------------------------------------------------
+      # 4. Terraform Destroy
+      # -------------------------------------------------
+      - name: Terraform Destroy
+        working-directory: terraform
+        run: terraform destroy -auto-approve
