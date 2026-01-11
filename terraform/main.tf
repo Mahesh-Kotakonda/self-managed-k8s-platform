@@ -128,7 +128,7 @@ resource "aws_security_group" "k8s" {
 ################################
 
 resource "aws_instance" "control_plane" {
-  ami                    = ami = data.aws_ami.ubuntu.id
+  ami                    = data.aws_ami.ubuntu.id
   instance_type          = var.instance_type
   subnet_id              = aws_subnet.public.id
   vpc_security_group_ids = [aws_security_group.k8s.id]
@@ -146,7 +146,7 @@ resource "aws_instance" "control_plane" {
 
 resource "aws_instance" "workers" {
   count                  = var.worker_count
-  ami                    = var.ami_id
+  ami                    = data.aws_ami.ubuntu.id
   instance_type          = var.instance_type
   subnet_id              = aws_subnet.public.id
   vpc_security_group_ids = [aws_security_group.k8s.id]
@@ -157,4 +157,5 @@ resource "aws_instance" "workers" {
     Role = "worker"
   }
 }
+
 
