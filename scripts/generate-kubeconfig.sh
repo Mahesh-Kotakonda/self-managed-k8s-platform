@@ -16,5 +16,8 @@ ssh -o StrictHostKeyChecking=no \
     -i "$KEY" \
     ubuntu@"$CONTROL_PLANE_IP" \
     "sudo cat /etc/kubernetes/admin.conf" > kubeconfig
+    
+echo "Patching kubeconfig to use public IP..."
+sed -i "s|server: https://.*:6443|server: https://${CONTROL_PLANE_IP}:6443|" kubeconfig
 
 echo "✅ Kubeconfig saved locally as ./kubeconfig"
