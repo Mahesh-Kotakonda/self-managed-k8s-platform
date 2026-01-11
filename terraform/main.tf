@@ -1,3 +1,15 @@
+terraform {
+  backend "s3" {
+    bucket  = "mahesh-k8s-terraform-bucket"
+    key     = "self-managed-k8s/terraform.tfstate"
+    region  = "us-east-1"
+    encrypt = true
+  }
+}
+
+
+
+
 data "aws_ami" "ubuntu" {
   most_recent = true
   owners      = ["099720109477"] # Canonical
@@ -157,5 +169,6 @@ resource "aws_instance" "workers" {
     Role = "worker"
   }
 }
+
 
 
