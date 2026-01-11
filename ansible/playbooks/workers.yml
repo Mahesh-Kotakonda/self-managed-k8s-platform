@@ -1,0 +1,23 @@
+- name: Join worker nodes to cluster
+  hosts: workers
+  become: yes
+
+  tasks:
+    - name: Copy join command from control plane
+      fetch:
+        src: /tmp/kubeadm_join.sh
+        dest: /tmp/kubeadm_join.sh
+        flat: yes
+      delegate_to: "{{ groups['control_plane'][0] }}"
+      run_once: true
+
+    - name: Copy join script to workers
+      copy:
+        src: /tmp/kubeadm_join.sh
+        dest: /tmp/kubeadm_join.sh
+        mode: 0755
+
+    - name: Join cluster
+      command: bash /tmp/kubeadm_join.sh
+      args:
+        creates: /etc/kubernetes/kubelet.conf
