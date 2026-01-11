@@ -31,9 +31,7 @@ variable "worker_count" {
 variable "key_name" {
   description = "Name of the existing AWS EC2 key pair"
   type        = string
+  default     = "k8s_key_pair"
 }
 
-variable "ami_id" {
-  description = "AMI ID for Ubuntu (20.04 or 22.04 recommended)"
-  type        = string
-}
+
