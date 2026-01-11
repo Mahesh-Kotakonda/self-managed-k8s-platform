@@ -64,7 +64,10 @@ jobs:
       #     ./scripts/wait-for-ssh.sh "$CONTROL_PLANE_IP"
 
 
-
+      - name: Print control plane IP
+        run: |
+          CONTROL_PLANE_IP=$(terraform -chdir=terraform output -raw control_plane_ip)
+          echo "Control Plane IP: $CONTROL_PLANE_IP"
 
       # -------------------------------------------------
       # 7. Bootstrap all nodes (OS + containerd + kube tools)
@@ -125,6 +128,7 @@ jobs:
         with:
           name: kubeconfig
           path: kubeconfig
+
 
 
 
