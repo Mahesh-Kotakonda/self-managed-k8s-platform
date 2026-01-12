@@ -1,0 +1,38 @@
+---
+- name: Setup bastion host (kubectl only)
+  hosts: bastion
+  become: true
+
+  vars:
+    kubectl_version: "v1.29.3"
+    kubectl_bin_path: /usr/local/bin/kubectl
+
+  tasks:
+    - name: Update apt cache
+      apt:
+        update_cache: yes
+        cache_valid_time: 3600
+
+    - name: Ensure required base packages are installed
+      apt:
+        name:
+          - ca-certificates
+          - curl
+          - openssh-client
+        state: present
+
+    - name: Download kubectl binary
+      get_url:
+        url: "https://dl.k8s.io/release/{{ kubectl_version }}/bin/linux/amd64/kubectl"
+        dest: "{{ kubectl_bin_path }}"
+        mode: "0755"
+        force: yes
+
+    - name: Verify kubectl installation
+      command: kubectl version --client
+      register: kubectl_version_output
+      changed_when: false
+
+    - name: Print kubectl version
+      debug:
+        msg: "{{ kubectl_version_output.stdout }}"
