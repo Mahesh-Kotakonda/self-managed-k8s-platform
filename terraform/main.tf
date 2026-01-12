@@ -7,6 +7,10 @@ terraform {
   }
 }
 
+provider "aws" {
+  region = var.aws_region
+}
+
 ############################
 # AMI
 ############################
@@ -53,9 +57,7 @@ resource "aws_subnet" "public" {
   availability_zone       = var.availability_zones[count.index]
   map_public_ip_on_launch = true
 
-  tags = {
-    Name = "k8s-public-${count.index}"
-  }
+  tags = { Name = "k8s-public-${count.index}" }
 }
 
 ############################
@@ -68,13 +70,11 @@ resource "aws_subnet" "private" {
   availability_zone       = var.availability_zones[count.index]
   map_public_ip_on_launch = false
 
-  tags = {
-    Name = "k8s-private-${count.index}"
-  }
+  tags = { Name = "k8s-private-${count.index}" }
 }
 
 ############################
-# NAT Gateway (single, shared)
+# NAT Gateway
 ############################
 resource "aws_eip" "nat" {
   domain = "vpc"
@@ -119,10 +119,50 @@ resource "aws_route_table_association" "private" {
 }
 
 ############################
+# Network ACL (FIX FOR SSH ISSUE)
+############################
+resource "aws_network_acl" "k8s_allow_all" {
+  vpc_id = aws_vpc.k8s.id
+
+  ingress {
+    rule_no    = 100
+    protocol   = "-1"
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 0
+    to_port    = 0
+  }
+
+  egress {
+    rule_no    = 100
+    protocol   = "-1"
+    action     = "allow"
+    cidr_block = "0.0.0.0/0"
+    from_port  = 0
+    to_port    = 0
+  }
+
+  tags = {
+    Name = "k8s-allow-all-nacl"
+  }
+}
+
+resource "aws_network_acl_association" "public" {
+  count          = 2
+  network_acl_id = aws_network_acl.k8s_allow_all.id
+  subnet_id      = aws_subnet.public[count.index].id
+}
+
+resource "aws_network_acl_association" "private" {
+  count          = 2
+  network_acl_id = aws_network_acl.k8s_allow_all.id
+  subnet_id      = aws_subnet.private[count.index].id
+}
+
+############################
 # Security Groups
 ############################
 
-# Bastion SG
 resource "aws_security_group" "bastion" {
   name   = "bastion-sg"
   vpc_id = aws_vpc.k8s.id
@@ -142,33 +182,29 @@ resource "aws_security_group" "bastion" {
   }
 }
 
-# Kubernetes Nodes SG
 resource "aws_security_group" "nodes" {
   name   = "k8s-nodes-sg"
   vpc_id = aws_vpc.k8s.id
 
   ingress {
-    description = "SSH from bastion"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
     security_groups = [aws_security_group.bastion.id]
   }
 
   ingress {
-    description = "Kubernetes API"
-    from_port   = 6443
-    to_port     = 6443
-    protocol    = "tcp"
-    self        = true
+    from_port = 6443
+    to_port   = 6443
+    protocol  = "tcp"
+    self      = true
   }
 
   ingress {
-    description = "Node to node"
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    self        = true
+    from_port = 0
+    to_port   = 0
+    protocol  = "-1"
+    self      = true
   }
 
   egress {
@@ -180,7 +216,7 @@ resource "aws_security_group" "nodes" {
 }
 
 ############################
-# Bastion Host
+# Bastion
 ############################
 resource "aws_instance" "bastion" {
   ami                    = data.aws_ami.ubuntu.id
@@ -209,7 +245,7 @@ resource "aws_instance" "control_plane" {
 }
 
 ############################
-# Worker Nodes (4 total, 2 per AZ)
+# Worker Nodes
 ############################
 resource "aws_instance" "workers" {
   count                  = 4
