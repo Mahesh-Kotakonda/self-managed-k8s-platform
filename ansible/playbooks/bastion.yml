@@ -133,4 +133,37 @@
         ansible-playbook -i inventory/inventory.ini playbooks/workers.yml
       args:
         executable: /bin/bash
+    # =====================================================
+    # INSTALL CNI (NETWORK)
+    # =====================================================
+    - name: Install Kubernetes CNI
+      become_user: ubuntu
+      shell: |
+        cd ~/ansible/ansible
+        ansible-playbook -i inventory/inventory.ini playbooks/network.yml
+      args:
+        executable: /bin/bash
+
+    # =====================================================
+    # FETCH KUBECONFIG
+    # =====================================================
+    - name: Fetch kubeconfig to bastion
+      become_user: ubuntu
+      shell: |
+        cd ~/ansible/ansible
+        ansible-playbook -i inventory/inventory.ini playbooks/kubeconfig.yml
+      args:
+        executable: /bin/bash
+
+    # =====================================================
+    # VALIDATE CLUSTER
+    # =====================================================
+    - name: Validate Kubernetes cluster
+      become_user: ubuntu
+      shell: |
+        cd ~/ansible/ansible
+        ansible-playbook -i inventory/inventory.ini playbooks/validate.yml
+      args:
+        executable: /bin/bash
+
 
