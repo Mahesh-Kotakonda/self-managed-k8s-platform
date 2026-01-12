@@ -142,27 +142,38 @@ resource "aws_security_group" "bastion" {
   }
 }
 
-# Kubernetes Nodes SG
 resource "aws_security_group" "nodes" {
   name   = "k8s-nodes-sg"
   vpc_id = aws_vpc.k8s.id
 
+  # SSH from bastion
   ingress {
-    description = "SSH from bastion"
-    from_port   = 22
-    to_port     = 22
-    protocol    = "tcp"
+    description     = "SSH from bastion"
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
     security_groups = [aws_security_group.bastion.id]
   }
 
+  # Kubernetes API from bastion 
   ingress {
-    description = "Kubernetes API"
+    description     = "Kubernetes API from bastion"
+    from_port       = 6443
+    to_port         = 6443
+    protocol        = "tcp"
+    security_groups = [aws_security_group.bastion.id]
+  }
+
+  # Kubernetes API node-to-node
+  ingress {
+    description = "Kubernetes API node to node"
     from_port   = 6443
     to_port     = 6443
     protocol    = "tcp"
     self        = true
   }
 
+  # Node-to-node all traffic (CNI, kubelet, etc.)
   ingress {
     description = "Node to node"
     from_port   = 0
@@ -178,6 +189,7 @@ resource "aws_security_group" "nodes" {
     cidr_blocks = ["0.0.0.0/0"]
   }
 }
+
 
 ############################
 # Bastion Host
@@ -224,3 +236,4 @@ resource "aws_instance" "workers" {
     Role = "worker"
   }
 }
+
