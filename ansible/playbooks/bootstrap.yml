@@ -1,8 +1,9 @@
 - name: Bootstrap Kubernetes nodes
-  hosts: all
+  hosts: hosts: control_plane:workers
   become: yes
 
   roles:
     - common
     - containerd
     - kubernetes
+
