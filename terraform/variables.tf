@@ -33,5 +33,6 @@ variable "key_name" {
 variable "admin_cidr_blocks" {
   description = "Allowed SSH sources for bastion"
   type        = list(string)
-  default     = ["YOUR_OFFICE_IP/32"]
+  default     = ["0.0.0.0/0"]
 }
+
