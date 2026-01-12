@@ -11,7 +11,7 @@
     ssh_key_src: /home/ec2-user/k8s_key_pair.pem
     ssh_key_dest: /home/ubuntu/.ssh/k8s_key_pair.pem
 
-    ansible_src_dir: ansible
+    ansible_src_dir: "{{ playbook_dir }}/.."
     ansible_dest_dir: /home/ubuntu/ansible
 
   tasks:
