@@ -1,0 +1,11 @@
+---
+- name: Validate Kubernetes cluster from bastion
+  hosts: bastion
+  become: false
+
+  tasks:
+    - name: Check cluster nodes
+      command: kubectl get nodes
+
+    - name: Check system pods
+      command: kubectl get pods -n kube-system
