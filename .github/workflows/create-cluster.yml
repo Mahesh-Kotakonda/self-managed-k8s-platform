@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@v4
 
       # -------------------------------------------------
-      # 2. Verify required tools
+      # 2. Verify tools on runner
       # -------------------------------------------------
       - name: Verify tools
         run: |
@@ -53,57 +53,9 @@ jobs:
           ./scripts/generate-inventory.sh
 
       # -------------------------------------------------
-      # 6. Setup Bastion (kubectl + SSH key)
+      # 6. Setup Bastion + Build Kubernetes Cluster
+      # (THIS does everything)
       # -------------------------------------------------
-      - name: Setup Bastion
+      - name: Setup Bastion and Bootstrap Cluster
         run: |
           ansible-playbook -i ansible/inventory/inventory.ini ansible/playbooks/bastion.yml
-
-      # -------------------------------------------------
-      # 7. Validate SSH connectivity (MUST PASS)
-      # -------------------------------------------------
-      - name: Validate SSH Connectivity
-        run: |
-          ansible -i ansible/inventory/inventory.ini all -m ping
-
-      # -------------------------------------------------
-      # 8. Bootstrap Kubernetes Nodes
-      # -------------------------------------------------
-      - name: Bootstrap Kubernetes Nodes
-        run: |
-          ansible-playbook -i ansible/inventory/inventory.ini ansible/playbooks/bootstrap.yml
-
-      # -------------------------------------------------
-      # 9. Initialize Control Plane
-      # -------------------------------------------------
-      - name: Initialize Control Plane
-        run: |
-          ansible-playbook -i ansible/inventory/inventory.ini ansible/playbooks/control-plane.yml
-
-      # -------------------------------------------------
-      # 10. Join Worker Nodes
-      # -------------------------------------------------
-      - name: Join Worker Nodes
-        run: |
-          ansible-playbook -i ansible/inventory/inventory.ini ansible/playbooks/workers.yml
-
-      # -------------------------------------------------
-      # 11. Install Kubernetes Network (CNI)
-      # -------------------------------------------------
-      - name: Install Kubernetes Network (CNI)
-        run: |
-          ansible-playbook -i ansible/inventory/inventory.ini ansible/playbooks/network.yml
-
-      # -------------------------------------------------
-      # 12. Copy kubeconfig to Bastion
-      # -------------------------------------------------
-      - name: Copy kubeconfig to Bastion
-        run: |
-          ansible-playbook -i ansible/inventory/inventory.ini ansible/playbooks/kubeconfig.yml
-
-      # -------------------------------------------------
-      # 13. Validate cluster from Bastion
-      # -------------------------------------------------
-      - name: Validate cluster from Bastion
-        run: |
-          ansible-playbook -i ansible/inventory/inventory.ini ansible/playbooks/validate.yml
