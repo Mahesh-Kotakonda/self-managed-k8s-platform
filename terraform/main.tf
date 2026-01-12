@@ -7,9 +7,6 @@ terraform {
   }
 }
 
-provider "aws" {
-  region = var.aws_region
-}
 
 ############################
 # AMI
@@ -260,3 +257,4 @@ resource "aws_instance" "workers" {
     Role = "worker"
   }
 }
+
