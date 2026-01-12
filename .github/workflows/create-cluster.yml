@@ -23,7 +23,7 @@ jobs:
         uses: actions/checkout@v4
 
       # -------------------------------------------------
-      # 2. Verify required tools (runner)
+      # 2. Verify required tools
       # -------------------------------------------------
       - name: Verify tools
         run: |
@@ -45,31 +45,22 @@ jobs:
         run: terraform apply -auto-approve
 
       # -------------------------------------------------
-      # 5. Generate Ansible Inventory (with bastion + ProxyJump)
+      # 5. Generate Ansible Inventory
       # -------------------------------------------------
       - name: Generate Ansible Inventory
         run: |
           chmod +x scripts/generate-inventory.sh
           ./scripts/generate-inventory.sh
-      - name: Start SSH agent and run Ansible
-        run: |
-          eval "$(ssh-agent -s)"
-          ssh-add /home/ec2-user/k8s_key_pair.pem
-          ssh-add -l
-      
-          ansible -i ansible/inventory/inventory.ini all -m ping
-
-
 
       # -------------------------------------------------
-      # 6. Setup Bastion (kubectl only)
+      # 6. Setup Bastion (kubectl + SSH key)
       # -------------------------------------------------
       - name: Setup Bastion
         run: |
           ansible-playbook -i ansible/inventory/inventory.ini ansible/playbooks/bastion.yml
 
       # -------------------------------------------------
-      # 7. Validate SSH connectivity (CRITICAL STEP)
+      # 7. Validate SSH connectivity (MUST PASS)
       # -------------------------------------------------
       - name: Validate SSH Connectivity
         run: |
@@ -95,28 +86,24 @@ jobs:
       - name: Join Worker Nodes
         run: |
           ansible-playbook -i ansible/inventory/inventory.ini ansible/playbooks/workers.yml
+
       # -------------------------------------------------
-      # Install CNI (network)
+      # 11. Install Kubernetes Network (CNI)
       # -------------------------------------------------
       - name: Install Kubernetes Network (CNI)
         run: |
           ansible-playbook -i ansible/inventory/inventory.ini ansible/playbooks/network.yml
+
       # -------------------------------------------------
-      # Copy kubeconfig to bastion
+      # 12. Copy kubeconfig to Bastion
       # -------------------------------------------------
       - name: Copy kubeconfig to Bastion
         run: |
           ansible-playbook -i ansible/inventory/inventory.ini ansible/playbooks/kubeconfig.yml
-      
+
       # -------------------------------------------------
-      # Validate cluster from Bastion
+      # 13. Validate cluster from Bastion
       # -------------------------------------------------
       - name: Validate cluster from Bastion
         run: |
           ansible-playbook -i ansible/inventory/inventory.ini ansible/playbooks/validate.yml
-
-
-
-
-
-
