@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -e
 
-echo "Generating Ansible inventory from Terraform outputs..."
+echo "Generating Ansible inventory for bastion execution..."
 
 cd terraform
 
@@ -23,31 +23,18 @@ control-plane ansible_host=${CONTROL_PLANE_IP}
 [workers]
 EOF
 
+i=1
 for ip in $WORKER_IPS; do
-  echo "worker ansible_host=${ip}" >> "$INVENTORY_PATH"
+  echo "worker${i} ansible_host=${ip}" >> "$INVENTORY_PATH"
+  i=$((i+1))
 done
 
 cat >> "$INVENTORY_PATH" <<EOF
 
-# -------------------------------
-# Global SSH settings (runner → bastion)
-# -------------------------------
 [all:vars]
 ansible_user=ubuntu
-ansible_ssh_private_key_file=/home/ec2-user/k8s_key_pair.pem
+ansible_ssh_private_key_file=/home/ubuntu/.ssh/k8s_key_pair.pem
 ansible_ssh_common_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
-
-# -------------------------------
-# SSH via bastion (bastion → private nodes)
-# Uses key copied to bastion
-# -------------------------------
-[control_plane:vars]
-ansible_ssh_private_key_file=/home/ubuntu/.ssh/k8s_key_pair.pem
-ansible_ssh_common_args='-o ProxyJump=ubuntu@${BASTION_IP} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
-
-[workers:vars]
-ansible_ssh_private_key_file=/home/ubuntu/.ssh/k8s_key_pair.pem
-ansible_ssh_common_args='-o ProxyJump=ubuntu@${BASTION_IP} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
 EOF
 
 echo "✅ Inventory generated at ${INVENTORY_PATH}"
