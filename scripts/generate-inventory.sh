@@ -35,10 +35,10 @@ ansible_ssh_private_key_file=/home/ec2-user/k8s_key_pair.pem
 ansible_ssh_common_args='-o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
 
 [control_plane:vars]
-ansible_ssh_common_args='-o ProxyJump=ubuntu@${BASTION_IP} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+ansible_ssh_common_args='-o ProxyJump=ubuntu@${BASTION_IP} -o ForwardAgent=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
 
 [workers:vars]
-ansible_ssh_common_args='-o ProxyJump=ubuntu@${BASTION_IP} -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
+ansible_ssh_common_args='-o ProxyJump=ubuntu@${BASTION_IP} -o ForwardAgent=yes -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null'
 EOF
 
 echo "✅ Inventory generated at ${INVENTORY_PATH}"
