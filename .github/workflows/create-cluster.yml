@@ -92,5 +92,20 @@ jobs:
       - name: Install Kubernetes Network (CNI)
         run: |
           ansible-playbook -i ansible/inventory/inventory.ini ansible/playbooks/network.yml
+      # -------------------------------------------------
+      # Copy kubeconfig to bastion
+      # -------------------------------------------------
+      - name: Copy kubeconfig to Bastion
+        run: |
+          ansible-playbook -i ansible/inventory/inventory.ini ansible/playbooks/kubeconfig.yml
+      
+      # -------------------------------------------------
+      # Validate cluster from Bastion
+      # -------------------------------------------------
+      - name: Validate cluster from Bastion
+        run: |
+          ansible-playbook -i ansible/inventory/inventory.ini ansible/playbooks/validate.yml
+
+
 
 
