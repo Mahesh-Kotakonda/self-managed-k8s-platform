@@ -113,23 +113,24 @@
     - name: Run Kubernetes bootstrap playbook
       become_user: ubuntu
       shell: |
-        cd ~/ansible
+        cd ~/ansible/ansible
         ansible-playbook -i inventory/inventory.ini playbooks/bootstrap.yml
       args:
         executable: /bin/bash
-
+    
     - name: Initialize control plane
       become_user: ubuntu
       shell: |
-        cd ~/ansible
+        cd ~/ansible/ansible
         ansible-playbook -i inventory/inventory.ini playbooks/control-plane.yml
       args:
         executable: /bin/bash
-
+    
     - name: Join worker nodes
       become_user: ubuntu
       shell: |
-        cd ~/ansible
+        cd ~/ansible/ansible
         ansible-playbook -i inventory/inventory.ini playbooks/workers.yml
       args:
         executable: /bin/bash
+
