@@ -86,3 +86,11 @@ jobs:
       - name: Join Worker Nodes
         run: |
           ansible-playbook -i ansible/inventory/inventory.ini ansible/playbooks/workers.yml
+      # -------------------------------------------------
+      # Install CNI (network)
+      # -------------------------------------------------
+      - name: Install Kubernetes Network (CNI)
+        run: |
+          ansible-playbook -i ansible/inventory/inventory.ini ansible/playbooks/network.yml
+
+
