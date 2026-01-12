@@ -1,17 +1,19 @@
-output "control_plane_ip" {
-  description = "Public IP address of the Kubernetes control plane"
-  value       = aws_instance.control_plane.public_ip
+output "bastion_public_ip" {
+  value = aws_instance.bastion.public_ip
 }
 
-output "worker_ips" {
-  description = "Public IP addresses of Kubernetes worker nodes"
-  value       = aws_instance.workers[*].public_ip
+output "control_plane_private_ip" {
+  value = aws_instance.control_plane.private_ip
 }
 
-output "all_node_ips" {
-  description = "All Kubernetes node IPs (control plane + workers)"
-  value = concat(
-    [aws_instance.control_plane.public_ip],
-    aws_instance.workers[*].public_ip
-  )
+output "worker_private_ips" {
+  value = aws_instance.workers[*].private_ip
+}
+
+output "private_subnet_ids" {
+  value = aws_subnet.private[*].id
+}
+
+output "public_subnet_ids" {
+  value = aws_subnet.public[*].id
 }
