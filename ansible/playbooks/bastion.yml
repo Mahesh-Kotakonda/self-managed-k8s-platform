@@ -1,5 +1,5 @@
 ---
-- name: Setup bastion host (kubectl + SSH key)
+- name: Setup bastion host and bootstrap Kubernetes cluster
   hosts: bastion
   become: true
 
@@ -10,6 +10,9 @@
     bastion_user: ubuntu
     ssh_key_src: /home/ec2-user/k8s_key_pair.pem
     ssh_key_dest: /home/ubuntu/.ssh/k8s_key_pair.pem
+
+    ansible_src_dir: ansible
+    ansible_dest_dir: /home/ubuntu/ansible
 
   tasks:
     # -------------------------------
@@ -26,7 +29,25 @@
           - ca-certificates
           - curl
           - openssh-client
+          - software-properties-common
         state: present
+
+    # -------------------------------
+    # Install Ansible on bastion
+    # -------------------------------
+    - name: Install Ansible
+      apt:
+        name: ansible
+        state: present
+
+    - name: Verify Ansible installation
+      command: ansible --version
+      register: ansible_version_output
+      changed_when: false
+
+    - name: Print Ansible version
+      debug:
+        msg: "{{ ansible_version_output.stdout_lines[0] }}"
 
     # -------------------------------
     # kubectl installation
@@ -48,7 +69,7 @@
         msg: "{{ kubectl_version_output.stdout }}"
 
     # -------------------------------
-    # SSH key setup (CRITICAL)
+    # SSH key setup
     # -------------------------------
     - name: Ensure .ssh directory exists for ubuntu user
       file:
@@ -73,3 +94,42 @@
         owner: ubuntu
         group: ubuntu
         mode: '0644'
+
+    # -------------------------------
+    # Copy Ansible project to bastion
+    # -------------------------------
+    - name: Copy Ansible directory to bastion
+      copy:
+        src: "{{ ansible_src_dir }}"
+        dest: "{{ ansible_dest_dir }}"
+        owner: ubuntu
+        group: ubuntu
+        mode: '0755'
+
+    # =====================================================
+    # RUN KUBERNETES BOOTSTRAP FROM BASTION
+    # =====================================================
+
+    - name: Run Kubernetes bootstrap playbook
+      become_user: ubuntu
+      shell: |
+        cd ~/ansible
+        ansible-playbook -i inventory/inventory.ini playbooks/bootstrap.yml
+      args:
+        executable: /bin/bash
+
+    - name: Initialize control plane
+      become_user: ubuntu
+      shell: |
+        cd ~/ansible
+        ansible-playbook -i inventory/inventory.ini playbooks/control-plane.yml
+      args:
+        executable: /bin/bash
+
+    - name: Join worker nodes
+      become_user: ubuntu
+      shell: |
+        cd ~/ansible
+        ansible-playbook -i inventory/inventory.ini playbooks/workers.yml
+      args:
+        executable: /bin/bash
