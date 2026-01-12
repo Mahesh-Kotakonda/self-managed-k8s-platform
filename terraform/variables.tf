@@ -1,38 +1,37 @@
 variable "aws_region" {
-  description = "AWS region where resources will be created"
-  type        = string
-  default     = "us-east-1"
+  default = "us-east-1"
 }
 
 variable "vpc_cidr" {
-  description = "CIDR block for the VPC"
-  type        = string
-  default     = "10.0.0.0/16"
+  default = "10.0.0.0/16"
 }
 
-variable "public_subnet_cidr" {
-  description = "CIDR block for the public subnet"
-  type        = string
-  default     = "10.0.1.0/24"
+variable "availability_zones" {
+  default = ["us-east-1a", "us-east-1b"]
+}
+
+variable "public_subnet_cidrs" {
+  default = ["10.0.1.0/24", "10.0.2.0/24"]
+}
+
+variable "private_subnet_cidrs" {
+  default = ["10.0.11.0/24", "10.0.12.0/24"]
 }
 
 variable "instance_type" {
-  description = "EC2 instance type for all nodes"
-  type        = string
-  default     = "c7i-flex.large"
+  default = "c7i-flex.large"
 }
 
-variable "worker_count" {
-  description = "Number of Kubernetes worker nodes"
-  type        = number
-  default     = 2
+variable "bastion_instance_type" {
+  default = "t3.micro"
 }
 
 variable "key_name" {
-  description = "Name of the existing AWS EC2 key pair"
-  type        = string
-  default     = "k8s_key_pair"
+  default = "k8s_key_pair"
 }
 
-
-
+variable "admin_cidr_blocks" {
+  description = "Allowed SSH sources for bastion"
+  type        = list(string)
+  default     = ["YOUR_OFFICE_IP/32"]
+}
