@@ -1,5 +1,5 @@
 ---
-- name: Setup bastion host (kubectl only)
+- name: Setup bastion host (kubectl + SSH key)
   hosts: bastion
   become: true
 
@@ -7,7 +7,14 @@
     kubectl_version: "v1.29.3"
     kubectl_bin_path: /usr/local/bin/kubectl
 
+    bastion_user: ubuntu
+    ssh_key_src: /home/ec2-user/k8s_key_pair.pem
+    ssh_key_dest: /home/ubuntu/.ssh/k8s_key_pair.pem
+
   tasks:
+    # -------------------------------
+    # Base packages
+    # -------------------------------
     - name: Update apt cache
       apt:
         update_cache: yes
@@ -21,6 +28,9 @@
           - openssh-client
         state: present
 
+    # -------------------------------
+    # kubectl installation
+    # -------------------------------
     - name: Download kubectl binary
       get_url:
         url: "https://dl.k8s.io/release/{{ kubectl_version }}/bin/linux/amd64/kubectl"
@@ -36,3 +46,30 @@
     - name: Print kubectl version
       debug:
         msg: "{{ kubectl_version_output.stdout }}"
+
+    # -------------------------------
+    # SSH key setup (CRITICAL)
+    # -------------------------------
+    - name: Ensure .ssh directory exists for ubuntu user
+      file:
+        path: /home/ubuntu/.ssh
+        state: directory
+        owner: ubuntu
+        group: ubuntu
+        mode: '0700'
+
+    - name: Copy SSH private key to bastion
+      copy:
+        src: "{{ ssh_key_src }}"
+        dest: "{{ ssh_key_dest }}"
+        owner: ubuntu
+        group: ubuntu
+        mode: '0600'
+
+    - name: Ensure known_hosts file exists
+      file:
+        path: /home/ubuntu/.ssh/known_hosts
+        state: touch
+        owner: ubuntu
+        group: ubuntu
+        mode: '0644'
