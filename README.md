@@ -81,6 +81,7 @@ Bastion Host (Public Subnet)
         v
 Kubernetes Nodes (Private Subnets)
 
+```md
 ---
 ## 🧱 Key Design Principles
 
