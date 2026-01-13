@@ -67,7 +67,21 @@ To create a **repeatable, destroyable, cost-aware Kubernetes cluster** that:
   Experiment with realistic infrastructure and failure scenarios
 
 ---
+## 🏗️ Architecture Overview
 
+```text
+GitHub Actions (Self-Hosted Runner)
+        |
+        v
+Terraform → AWS Infrastructure
+        |
+        v
+Bastion Host (Public Subnet)
+        |
+        v
+Kubernetes Nodes (Private Subnets)
+
+---
 ## 🧱 Key Design Principles
 
 - Kubernetes nodes **do not have public IPs**
@@ -170,16 +184,4 @@ scripts/
   wait-for-ssh.sh
 
 
-## 🏗️ Architecture Overview
 
-```text
-GitHub Actions (Self-Hosted Runner)
-        |
-        v
-Terraform → AWS Infrastructure
-        |
-        v
-Bastion Host (Public Subnet)
-        |
-        v
-Kubernetes Nodes (Private Subnets)
