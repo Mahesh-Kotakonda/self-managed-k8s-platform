@@ -210,8 +210,6 @@ ansible/
 
 scripts/
   generate-inventory.sh
-  generate-kubeconfig.sh
-  wait-for-ssh.sh
 
 
 
