@@ -82,3 +82,14 @@ Bastion Host (Public Subnet)
         |
         v
 Kubernetes Nodes (Private Subnets)
+
+
+🧱 Key Design Principles
+
+Kubernetes nodes do not have public IPs
+
+All access happens through a bastion host
+
+Infrastructure and configuration are fully automated
+
+The cluster can be safely destroyed at any time
