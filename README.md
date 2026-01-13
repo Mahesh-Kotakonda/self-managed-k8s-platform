@@ -1,64 +1,77 @@
-🚀 Self-Managed Production-Style Kubernetes Cluster on AWS
+# 🚀 Self-Managed Production-Style Kubernetes Cluster on AWS
 
-Fully automated using Terraform, Ansible, and GitHub Actions
+**Fully automated using Terraform, Ansible, and GitHub Actions**
 
-📌 Project Overview
+---
 
-This repository implements a self-managed, production-style Kubernetes cluster on AWS, fully automated from infrastructure provisioning to cluster bootstrap and clean teardown.
+## 📌 Project Overview
 
-Unlike local Kubernetes tools or managed services, this project exposes real Kubernetes internals, real cloud networking, and real operational challenges — making it ideal for learning, experimentation, and platform engineering practice.
+This repository implements a **self-managed, production-style Kubernetes cluster on AWS**, fully automated from **infrastructure provisioning** to **cluster bootstrap** and **clean teardown**.
 
-This is not a demo cluster.
-It is a long-living, reusable Kubernetes environment designed to behave like production.
+Unlike local Kubernetes tools (Minikube, Kind) or managed services (EKS), this project exposes:
 
-❓ Why This Project Exists
-The Problem
+- Real Kubernetes internals  
+- Real cloud networking and security boundaries  
+- Real operational challenges  
 
-Local tools (Minikube, Kind) do not reflect production reality
+This makes it ideal for **learning, experimentation, and platform engineering practice**.
 
-Managed Kubernetes (EKS) hides critical internals
+> ⚠️ **This is not a demo cluster.**  
+> It is a **long-living, reusable Kubernetes environment** designed to behave like real production systems.
 
-Manual cluster creation is slow and inconsistent
+---
 
-Private networking, NAT, and security are hard to practice locally
+## ❓ Why This Project Exists
 
-Forgotten cloud resources lead to unexpected costs
+### The Problem
 
-The Goal
+- Local Kubernetes tools **do not reflect production reality**
+- Managed Kubernetes (EKS) **hides critical internals**
+- Manual cluster creation is **slow, inconsistent, and error-prone**
+- Private networking, NAT, and security are **hard to practice locally**
+- Forgotten cloud resources lead to **unexpected costs**
 
-To create a repeatable, destroyable, cost-aware Kubernetes cluster that:
+### The Goal
 
-Runs in a real cloud
+To create a **repeatable, destroyable, cost-aware Kubernetes cluster** that:
 
-Uses private networking
+- Runs in a **real cloud environment**
+- Uses **private networking**
+- Is **fully automated**
+- Can be **reused safely** for deep Kubernetes learning and experimentation
 
-Is fully automated
+---
 
-Can be reused for deep Kubernetes learning and experimentation
+## ✅ What This Project Solves
 
-✅ What This Project Solves
+- Provides a **real AWS-based Kubernetes cluster**
+- Uses **private subnets** with **bastion-based access**
+- Automates the **entire lifecycle**  
+  *(create → use → destroy)*
+- Separates **infrastructure** from **configuration**
+- Enables **safe experimentation** without manual setup
 
-Provides a real AWS-based Kubernetes cluster
+---
 
-Uses private subnets with bastion-based access
+## 🧠 Who Should Use This
 
-Automates the entire lifecycle (create → use → destroy)
+- **Beginners**  
+  Learn how Kubernetes is built in real-world environments
 
-Separates infrastructure and configuration
+- **Engineers**  
+  Learn Terraform, Ansible, and Kubernetes together
 
-Enables safe experimentation without manual setup
+- **DevOps / Platform Engineers**  
+  Practice production-style cluster design and automation
 
-🧠 Who Should Use This
+- **MLOps / SRE Learners**  
+  Experiment with realistic infrastructure and failure scenarios
 
-Beginners — understand how Kubernetes is built in real environments
+---
 
-Engineers — learn Terraform, Ansible, and Kubernetes together
+## 🏗️ Architecture Overview
 
-DevOps / Platform Engineers — practice production-style cluster design
-
-MLOps / SRE learners — experiment with realistic infrastructure
-
-🏗️ Architecture Overview
+```text
 GitHub Actions (Self-Hosted Runner)
         |
         v
@@ -69,171 +82,3 @@ Bastion Host (Public Subnet)
         |
         v
 Kubernetes Nodes (Private Subnets)
-
-Key Design Principles
-
-Kubernetes nodes have no public IPs
-
-All access happens via a bastion host
-
-Infrastructure and configuration are fully automated
-
-The cluster can be safely destroyed anytime
-
-🌐 Networking & Security Model
-
-Custom AWS VPC
-
-Public Subnet
-
-Bastion Host (single entry point)
-
-Private Subnets
-
-Kubernetes Control Plane
-
-Worker Nodes
-
-NAT Gateway for outbound access
-
-Strict Security Group rules
-
-This setup mirrors real production security boundaries.
-
-🔄 How the System Works (Flow)
-
-GitHub Actions orchestrates the workflow using a self-hosted runner
-
-Terraform provisions all AWS infrastructure (VPC, EC2, networking)
-
-Terraform outputs are used to generate a dynamic Ansible inventory
-
-Ansible, executed via the bastion, configures:
-
-OS prerequisites
-
-containerd runtime
-
-Kubernetes components via kubeadm
-
-The Kubernetes cluster is initialized and validated
-
-kubeconfig is securely retrieved for cluster access
-
-The cluster can be destroyed cleanly using Terraform
-
-Everything is automated — no manual SSH hopping, no hardcoded values.
-
-🧰 Tools & Technologies Used
-Infrastructure
-
-AWS EC2 – Compute
-
-AWS VPC – Networking
-
-NAT & Internet Gateway – Controlled internet access
-
-Security Groups – Firewall rules
-
-Automation
-
-Terraform – Infrastructure provisioning
-
-Ansible – OS & Kubernetes configuration
-
-GitHub Actions – CI/CD orchestration
-
-Self-Hosted Runner – Secure execution environment
-
-Kubernetes Stack
-
-kubeadm – Cluster initialization
-
-kubelet – Node agent
-
-kubectl – Cluster management
-
-containerd – Container runtime
-
-Calico – CNI networking
-
-📂 Repository Structure
-.github/workflows/
-  create-cluster.yml
-  destroy-cluster.yml
-
-terraform/
-  main.tf
-  variables.tf
-  outputs.tf
-  providers.tf
-  versions.tf
-
-ansible/
-  inventory/
-    inventory.ini.j2
-  playbooks/
-    bastion.yml
-    bootstrap.yml
-    control-plane.yml
-    workers.yml
-    network.yml
-    kubeconfig.yml
-    validate.yml
-
-scripts/
-  generate-inventory.sh
-  generate-kubeconfig.sh
-  wait-for-ssh.sh
-
-🎯 What You Achieve With This Project
-
-Hands-on experience with real Kubernetes internals
-
-Practice production-grade networking and security
-
-Learn end-to-end automation
-
-Experiment safely with:
-
-Storage (PV / PVC)
-
-Networking & ingress
-
-Node failures and recovery
-
-MLOps and SRE workflows
-
-Avoid cloud cost surprises through clean teardown
-
-🔮 Future Enhancements
-
-Multi-control-plane (HA) setup
-
-API server load balancer
-
-Ingress controller
-
-Monitoring & logging stack
-
-Autoscaling
-
-GPU-enabled node pools
-
-Policy enforcement (OPA / Kyverno)
-
-⭐ Why This Project Matters
-
-This repository demonstrates:
-
-Infrastructure-as-Code discipline
-
-Secure production-style networking
-
-Real Kubernetes bootstrapping
-
-Automation-first design
-
-Cost-aware cloud usage
-
-It is built to be read, reused, extended, broken, and fixed — just like real production systems.
