@@ -69,16 +69,7 @@ To create a **repeatable, destroyable, cost-aware Kubernetes cluster** that:
 ---
 ## 🏗️ Architecture Overview
 
-GitHub Actions (Self-Hosted Runner)
-        |
-        v
-Terraform → AWS Infrastructure
-        |
-        v
-Bastion Host (Public Subnet)
-        |
-        v
-Kubernetes Nodes (Private Subnets)
+GitHub Actions (Self-Hosted Runner)--->Terraform → AWS Infrastructure----> Bastion Host (Public Subnet)----> Kubernetes Nodes (Private Subnets)
 
 ---
 ## 🧱 Key Design Principles
