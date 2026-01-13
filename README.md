@@ -81,15 +81,108 @@ Terraform → AWS Infrastructure
 Bastion Host (Public Subnet)
         |
         v
-Kubernetes Nodes (Private Subnets)
+Kubernetes Nodes (Private Subnets)```
+
+## 🧱 Key Design Principles
+
+- Kubernetes nodes **do not have public IPs**
+- All access happens **through a bastion host**
+- Infrastructure and configuration are **fully automated**
+- The cluster can be **safely destroyed at any time**
+
+---
+
+## 🌐 Networking & Security Model
+
+- **Custom AWS VPC**
+- **Public Subnet**
+  - Bastion Host (single secure entry point)
+- **Private Subnets**
+  - Kubernetes Control Plane
+  - Worker Nodes
+- **NAT Gateway**
+  - Allows outbound internet access for private nodes
+- **Strict Security Group rules**
+  - Minimal inbound access
+  - Explicit east–west traffic control
+
+> This setup mirrors **real production security boundaries**.
+
+---
+
+## 🔄 How the System Works
+
+1. **GitHub Actions** orchestrates workflows using a self-hosted runner  
+2. **Terraform** provisions all AWS infrastructure (VPC, EC2, networking)  
+3. Terraform outputs generate a **dynamic Ansible inventory**  
+4. **Ansible**, executed from the bastion host, configures:
+   - OS prerequisites
+   - `containerd` container runtime
+   - Kubernetes components using `kubeadm`
+5. The Kubernetes control plane is initialized  
+6. Worker nodes securely join the cluster  
+7. `kubeconfig` is retrieved for cluster access  
+8. The cluster can be **cleanly destroyed** using Terraform  
+
+✅ No manual SSH hopping  
+✅ No hardcoded IP addresses  
+✅ Fully automated lifecycle  
+
+---
+
+## 🧰 Tools & Technologies Used
+
+### Infrastructure
+- **AWS EC2** – Compute  
+- **AWS VPC** – Networking  
+- **NAT & Internet Gateway** – Controlled internet access  
+- **Security Groups** – Firewall rules  
+
+### Automation
+- **Terraform** – Infrastructure provisioning  
+- **Ansible** – OS and Kubernetes configuration  
+- **GitHub Actions** – CI/CD orchestration  
+- **Self-Hosted Runner** – Secure execution environment  
+
+### Kubernetes Stack
+- **kubeadm** – Cluster initialization  
+- **kubelet** – Node agent  
+- **kubectl** – Cluster management  
+- **containerd** – Container runtime  
+- **Calico** – CNI networking  
+
+---
+
+## 📂 Repository Structure
+
+```text
+.github/workflows/
+  create-cluster.yml
+  destroy-cluster.yml
+
+terraform/
+  main.tf
+  variables.tf
+  outputs.tf
+  providers.tf
+  versions.tf
+
+ansible/
+  inventory/
+    inventory.ini.j2
+  playbooks/
+    bastion.yml
+    bootstrap.yml
+    control-plane.yml
+    workers.yml
+    network.yml
+    kubeconfig.yml
+    validate.yml
+
+scripts/
+  generate-inventory.sh
+  generate-kubeconfig.sh
+  wait-for-ssh.sh
 
 
-🧱 Key Design Principles
 
-Kubernetes nodes do not have public IPs
-
-All access happens through a bastion host
-
-Infrastructure and configuration are fully automated
-
-The cluster can be safely destroyed at any time
