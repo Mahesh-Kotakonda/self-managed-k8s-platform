@@ -10,9 +10,9 @@ This repository implements a **self-managed, production-style Kubernetes cluster
 
 Unlike local Kubernetes tools (Minikube, Kind) or managed services (EKS), this project exposes:
 
-- Real Kubernetes internals  
-- Real cloud networking and security boundaries  
-- Real operational challenges  
+- Real Kubernetes internals
+- Real cloud networking and security boundaries
+- Real operational challenges
 
 This makes it ideal for **learning, experimentation, and platform engineering practice**.
 
@@ -46,8 +46,7 @@ To create a **repeatable, destroyable, cost-aware Kubernetes cluster** that:
 
 - Provides a **real AWS-based Kubernetes cluster**
 - Uses **private subnets** with **bastion-based access**
-- Automates the **entire lifecycle**  
-  *(create → use → destroy)*
+- Automates the **entire lifecycle** *(create → use → destroy)*
 - Separates **infrastructure** from **configuration**
 - Enables **safe experimentation** without manual setup
 
@@ -68,20 +67,6 @@ To create a **repeatable, destroyable, cost-aware Kubernetes cluster** that:
   Experiment with realistic infrastructure and failure scenarios
 
 ---
-
-## 🏗️ Architecture Overview
-
-```text
-GitHub Actions (Self-Hosted Runner)
-        |
-        v
-Terraform → AWS Infrastructure
-        |
-        v
-Bastion Host (Public Subnet)
-        |
-        v
-Kubernetes Nodes (Private Subnets)```
 
 ## 🧱 Key Design Principles
 
@@ -112,17 +97,17 @@ Kubernetes Nodes (Private Subnets)```
 
 ## 🔄 How the System Works
 
-1. **GitHub Actions** orchestrates workflows using a self-hosted runner  
-2. **Terraform** provisions all AWS infrastructure (VPC, EC2, networking)  
-3. Terraform outputs generate a **dynamic Ansible inventory**  
+1. **GitHub Actions** orchestrates workflows using a self-hosted runner
+2. **Terraform** provisions all AWS infrastructure (VPC, EC2, networking)
+3. Terraform outputs generate a **dynamic Ansible inventory**
 4. **Ansible**, executed from the bastion host, configures:
    - OS prerequisites
    - `containerd` container runtime
    - Kubernetes components using `kubeadm`
-5. The Kubernetes control plane is initialized  
-6. Worker nodes securely join the cluster  
-7. `kubeconfig` is retrieved for cluster access  
-8. The cluster can be **cleanly destroyed** using Terraform  
+5. The Kubernetes control plane is initialized
+6. Worker nodes securely join the cluster
+7. `kubeconfig` is retrieved for cluster access
+8. The cluster can be **cleanly destroyed** using Terraform
 
 ✅ No manual SSH hopping  
 ✅ No hardcoded IP addresses  
@@ -133,23 +118,23 @@ Kubernetes Nodes (Private Subnets)```
 ## 🧰 Tools & Technologies Used
 
 ### Infrastructure
-- **AWS EC2** – Compute  
-- **AWS VPC** – Networking  
-- **NAT & Internet Gateway** – Controlled internet access  
-- **Security Groups** – Firewall rules  
+- **AWS EC2** – Compute
+- **AWS VPC** – Networking
+- **NAT & Internet Gateway** – Controlled internet access
+- **Security Groups** – Firewall rules
 
 ### Automation
-- **Terraform** – Infrastructure provisioning  
-- **Ansible** – OS and Kubernetes configuration  
-- **GitHub Actions** – CI/CD orchestration  
-- **Self-Hosted Runner** – Secure execution environment  
+- **Terraform** – Infrastructure provisioning
+- **Ansible** – OS and Kubernetes configuration
+- **GitHub Actions** – CI/CD orchestration
+- **Self-Hosted Runner** – Secure execution environment
 
 ### Kubernetes Stack
-- **kubeadm** – Cluster initialization  
-- **kubelet** – Node agent  
-- **kubectl** – Cluster management  
-- **containerd** – Container runtime  
-- **Calico** – CNI networking  
+- **kubeadm** – Cluster initialization
+- **kubelet** – Node agent
+- **kubectl** – Cluster management
+- **containerd** – Container runtime
+- **Calico** – CNI networking
 
 ---
 
@@ -185,4 +170,16 @@ scripts/
   wait-for-ssh.sh
 
 
+## 🏗️ Architecture Overview
 
+```text
+GitHub Actions (Self-Hosted Runner)
+        |
+        v
+Terraform → AWS Infrastructure
+        |
+        v
+Bastion Host (Public Subnet)
+        |
+        v
+Kubernetes Nodes (Private Subnets)
