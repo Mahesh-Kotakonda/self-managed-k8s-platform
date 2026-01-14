@@ -166,34 +166,6 @@ GitHub Actions (Self-Hosted Runner)--->Terraform → AWS Infrastructure----> Bas
 - Policy enforcement (OPA / Kyverno)
 
 ---
-## 📂 Repository Structure
-
-```text
-.github/workflows/
-  create-cluster.yml
-  destroy-cluster.yml
-
-terraform/
-  main.tf
-  variables.tf
-  outputs.tf
-  providers.tf
-  versions.tf
-
-ansible/
-  inventory/
-    inventory.ini.j2
-  playbooks/
-    bastion.yml
-    bootstrap.yml
-    control-plane.yml
-    workers.yml
-    network.yml
-    kubeconfig.yml
-    validate.yml
-
-scripts/
-  generate-inventory.sh```
 
 ## ⭐ Why This Project Matters
 
