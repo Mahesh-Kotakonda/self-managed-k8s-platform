@@ -166,22 +166,6 @@ GitHub Actions (Self-Hosted Runner)--->Terraform → AWS Infrastructure----> Bas
 - Policy enforcement (OPA / Kyverno)
 
 ---
-
-## ⭐ Why This Project Matters
-
-This repository demonstrates:
-
-- **Infrastructure-as-Code discipline**
-- **Secure production-style networking**
-- **Real Kubernetes bootstrapping**
-- **Automation-first design**
-- **Cost-aware cloud usage**
-
-> Built to be **read, reused, extended, broken, and fixed** —  
-> just like real production systems.
-
-
-
 ## 📂 Repository Structure
 
 ```text
@@ -209,7 +193,24 @@ ansible/
     validate.yml
 
 scripts/
-  generate-inventory.sh
+  generate-inventory.sh```
+
+## ⭐ Why This Project Matters
+
+This repository demonstrates:
+
+- **Infrastructure-as-Code discipline**
+- **Secure production-style networking**
+- **Real Kubernetes bootstrapping**
+- **Automation-first design**
+- **Cost-aware cloud usage**
+
+> Built to be **read, reused, extended, broken, and fixed** —  
+> just like real production systems.
+
+
+
+
 
 
 
