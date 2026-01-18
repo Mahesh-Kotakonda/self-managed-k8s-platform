@@ -44,7 +44,7 @@ resource "aws_internet_gateway" "igw" {
 }
 
 ############################
-# Public Subnets (2 AZs)
+# Public Subnets
 ############################
 resource "aws_subnet" "public" {
   count                   = 2
@@ -59,7 +59,7 @@ resource "aws_subnet" "public" {
 }
 
 ############################
-# Private Subnets (2 AZs)
+# Private Subnets
 ############################
 resource "aws_subnet" "private" {
   count                   = 2
@@ -74,7 +74,7 @@ resource "aws_subnet" "private" {
 }
 
 ############################
-# NAT Gateway (single, shared)
+# NAT Gateway
 ############################
 resource "aws_eip" "nat" {
   domain = "vpc"
@@ -119,10 +119,38 @@ resource "aws_route_table_association" "private" {
 }
 
 ############################
+# IAM ROLE + INSTANCE PROFILE (NEW)
+############################
+
+resource "aws_iam_role" "ec2_ecr_role" {
+  name = "k8s-ec2-ecr-role"
+
+  assume_role_policy = jsonencode({
+    Version = "2012-10-17"
+    Statement = [{
+      Effect = "Allow"
+      Principal = {
+        Service = "ec2.amazonaws.com"
+      }
+      Action = "sts:AssumeRole"
+    }]
+  })
+}
+
+resource "aws_iam_role_policy_attachment" "ecr_access" {
+  role       = aws_iam_role.ec2_ecr_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess"
+}
+
+resource "aws_iam_instance_profile" "ec2_profile" {
+  name = "k8s-ec2-instance-profile"
+  role = aws_iam_role.ec2_ecr_role.name
+}
+
+############################
 # Security Groups
 ############################
 
-# Bastion SG
 resource "aws_security_group" "bastion" {
   name   = "bastion-sg"
   vpc_id = aws_vpc.k8s.id
@@ -146,40 +174,32 @@ resource "aws_security_group" "nodes" {
   name   = "k8s-nodes-sg"
   vpc_id = aws_vpc.k8s.id
 
-  # SSH from bastion
   ingress {
-    description     = "SSH from bastion"
     from_port       = 22
     to_port         = 22
     protocol        = "tcp"
     security_groups = [aws_security_group.bastion.id]
   }
 
-  # Kubernetes API from bastion 
   ingress {
-    description     = "Kubernetes API from bastion"
     from_port       = 6443
     to_port         = 6443
     protocol        = "tcp"
     security_groups = [aws_security_group.bastion.id]
   }
 
-  # Kubernetes API node-to-node
   ingress {
-    description = "Kubernetes API node to node"
-    from_port   = 6443
-    to_port     = 6443
-    protocol    = "tcp"
-    self        = true
+    from_port = 6443
+    to_port   = 6443
+    protocol  = "tcp"
+    self      = true
   }
 
-  # Node-to-node all traffic (CNI, kubelet, etc.)
   ingress {
-    description = "Node to node"
-    from_port   = 0
-    to_port     = 0
-    protocol    = "-1"
-    self        = true
+    from_port = 0
+    to_port   = 0
+    protocol  = "-1"
+    self      = true
   }
 
   egress {
@@ -190,7 +210,6 @@ resource "aws_security_group" "nodes" {
   }
 }
 
-
 ############################
 # Bastion Host
 ############################
@@ -200,6 +219,8 @@ resource "aws_instance" "bastion" {
   subnet_id              = aws_subnet.public[0].id
   vpc_security_group_ids = [aws_security_group.bastion.id]
   key_name               = var.key_name
+
+  iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
 
   tags = { Name = "k8s-bastion" }
 }
@@ -214,6 +235,8 @@ resource "aws_instance" "control_plane" {
   vpc_security_group_ids = [aws_security_group.nodes.id]
   key_name               = var.key_name
 
+  iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
+
   tags = {
     Name = "k8s-control-plane"
     Role = "control-plane"
@@ -221,7 +244,7 @@ resource "aws_instance" "control_plane" {
 }
 
 ############################
-# Worker Nodes (4 total, 2 per AZ)
+# Worker Nodes
 ############################
 resource "aws_instance" "workers" {
   count                  = 4
@@ -231,9 +254,10 @@ resource "aws_instance" "workers" {
   vpc_security_group_ids = [aws_security_group.nodes.id]
   key_name               = var.key_name
 
+  iam_instance_profile = aws_iam_instance_profile.ec2_profile.name
+
   tags = {
     Name = "k8s-worker-${count.index + 1}"
     Role = "worker"
   }
 }
-
