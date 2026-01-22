@@ -30,6 +30,7 @@
           - curl
           - openssh-client
           - software-properties-common
+          - unzip
         state: present
 
     # -------------------------------
@@ -67,6 +68,35 @@
     - name: Print kubectl version
       debug:
         msg: "{{ kubectl_version_output.stdout }}"
+
+    # -------------------------------
+    # AWS CLI installation
+    # -------------------------------
+    - name: Download AWS CLI v2
+      get_url:
+        url: https://awscli.amazonaws.com/awscli-exe-linux-x86_64.zip
+        dest: /tmp/awscliv2.zip
+        mode: "0644"
+
+    - name: Unzip AWS CLI installer
+      unarchive:
+        src: /tmp/awscliv2.zip
+        dest: /tmp
+        remote_src: yes
+
+    - name: Install AWS CLI v2
+      command: /tmp/aws/install --update
+      args:
+        creates: /usr/local/bin/aws
+
+    - name: Verify AWS CLI installation
+      command: aws --version
+      register: aws_version_output
+      changed_when: false
+
+    - name: Print AWS CLI version
+      debug:
+        msg: "{{ aws_version_output.stdout }}"
 
     # -------------------------------
     # SSH key setup
@@ -133,6 +163,7 @@
         ansible-playbook -i inventory/inventory.ini playbooks/workers.yml
       args:
         executable: /bin/bash
+
     # =====================================================
     # INSTALL CNI (NETWORK)
     # =====================================================
@@ -165,5 +196,3 @@
         ansible-playbook -i inventory/inventory.ini playbooks/validate.yml
       args:
         executable: /bin/bash
-
-
