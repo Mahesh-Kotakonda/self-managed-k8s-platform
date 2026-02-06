@@ -259,6 +259,7 @@ resource "aws_instance" "control_plane" {
   tags = {
     Name = "k8s-control-plane"
     Role = "control-plane"
+    "kubernetes.io/cluster/self-managed-k8s" = "owned"
   }
 }
 
@@ -278,7 +279,9 @@ resource "aws_instance" "workers" {
   tags = {
     Name = "k8s-worker-${count.index + 1}"
     Role = "worker"
+    "kubernetes.io/cluster/self-managed-k8s" = "owned"
   }
 }
+
 
 
