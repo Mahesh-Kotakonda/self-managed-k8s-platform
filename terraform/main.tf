@@ -198,6 +198,7 @@ resource "aws_security_group" "nodes" {
     to_port     = 65535
     protocol    = "tcp"
     cidr_blocks = ["192.168.0.0/16"]
+}
 
   # NLB → Node / Pod traffic (ALL ports)
   ingress {
@@ -312,6 +313,7 @@ resource "aws_instance" "workers" {
     "kubernetes.io/cluster/self-managed-k8s" = "owned"
   }
 }
+
 
 
 
