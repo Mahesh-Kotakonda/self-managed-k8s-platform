@@ -192,6 +192,15 @@ resource "aws_security_group" "bastion" {
 resource "aws_security_group" "nodes" {
   name   = "k8s-nodes-sg"
   vpc_id = aws_vpc.k8s.id
+
+  # Allow NLB -> NodePort traffic
+  ingress {
+    from_port   = 30000
+    to_port     = 32767
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
   # 2️⃣ Pod overlay network traffic (VERY IMPORTANT)
   ingress {
     from_port   = 0
@@ -313,6 +322,7 @@ resource "aws_instance" "workers" {
     "kubernetes.io/cluster/self-managed-k8s" = "owned"
   }
 }
+
 
 
 
