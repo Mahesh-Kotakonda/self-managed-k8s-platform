@@ -194,6 +194,13 @@ resource "aws_security_group" "nodes" {
   vpc_id = aws_vpc.k8s.id
 
   ingress {
+    from_port   = 80
+    to_port     = 80
+    protocol    = "tcp"
+    cidr_blocks = ["0.0.0.0/0"]
+  }
+
+  ingress {
     from_port       = 22
     to_port         = 22
     protocol        = "tcp"
@@ -282,6 +289,7 @@ resource "aws_instance" "workers" {
     "kubernetes.io/cluster/self-managed-k8s" = "owned"
   }
 }
+
 
 
 
