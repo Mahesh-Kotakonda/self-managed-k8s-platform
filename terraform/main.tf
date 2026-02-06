@@ -152,7 +152,7 @@ resource "aws_iam_role_policy_attachment" "ecr_access" {
 }
 resource "aws_iam_role_policy_attachment" "elb_access" {
   role       = aws_iam_role.ec2_ecr_role.name
-  policy_arn = "arn:aws:iam::aws:policy/AmazonElasticLoadBalancingFullAccess"
+  policy_arn = "arn:aws:iam::aws:policy/ElasticLoadBalancingFullAccess"
 }
 
 resource "aws_iam_role_policy_attachment" "ec2_readonly" {
@@ -280,4 +280,5 @@ resource "aws_instance" "workers" {
     Role = "worker"
   }
 }
+
 
