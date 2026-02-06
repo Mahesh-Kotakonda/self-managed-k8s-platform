@@ -55,8 +55,15 @@ resource "aws_subnet" "public" {
 
   tags = {
     Name = "k8s-public-${count.index}"
+
+    # REQUIRED for public LoadBalancer
+    "kubernetes.io/role/elb" = "1"
+
+    # REQUIRED so Kubernetes knows this subnet belongs to this cluster
+    "kubernetes.io/cluster/self-managed-k8s" = "shared"
   }
 }
+
 
 ############################
 # Private Subnets
@@ -70,6 +77,8 @@ resource "aws_subnet" "private" {
 
   tags = {
     Name = "k8s-private-${count.index}"
+    "kubernetes.io/role/internal-elb" = "1"
+    "kubernetes.io/cluster/self-managed-k8s" = "shared"
   }
 }
 
@@ -141,6 +150,16 @@ resource "aws_iam_role_policy_attachment" "ecr_access" {
   role       = aws_iam_role.ec2_ecr_role.name
   policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ContainerRegistryFullAccess"
 }
+resource "aws_iam_role_policy_attachment" "elb_access" {
+  role       = aws_iam_role.ec2_ecr_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonElasticLoadBalancingFullAccess"
+}
+
+resource "aws_iam_role_policy_attachment" "ec2_readonly" {
+  role       = aws_iam_role.ec2_ecr_role.name
+  policy_arn = "arn:aws:iam::aws:policy/AmazonEC2ReadOnlyAccess"
+}
+
 
 resource "aws_iam_instance_profile" "ec2_profile" {
   name = "k8s-ec2-instance-profile"
@@ -261,3 +280,4 @@ resource "aws_instance" "workers" {
     Role = "worker"
   }
 }
+
