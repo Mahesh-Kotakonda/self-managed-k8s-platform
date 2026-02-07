@@ -1,5 +1,5 @@
 ---
-- name: Validate Kubernetes cluster and reconcile AWS controllers
+- name: Validate Kubernetes cluster and install AWS controllers
   hosts: bastion
   connection: local
   become: false
@@ -21,13 +21,14 @@
 
     # =====================================================
     # AWS CLOUD CONTROLLER MANAGER (CCM)
+    # (SAME command you tested manually)
     # =====================================================
     - name: Install / reconcile AWS Cloud Controller Manager
       command: >
-        kubectl apply -f
-        https://raw.githubusercontent.com/kubernetes/cloud-provider-aws/master/manifests/aws-cloud-controller-manager-daemonset.yaml
+        kubectl apply -k
+        github.com/kubernetes/cloud-provider-aws/examples/existing-cluster/base/
 
-    - name: Wait for AWS CCM pods to be ready
+    - name: Wait for AWS CCM pods
       command: >
         kubectl wait
         --for=condition=Ready
@@ -40,7 +41,8 @@
       command: kubectl get pods -n kube-system -l k8s-app=aws-cloud-controller-manager
 
     # =====================================================
-    # CERT-MANAGER (REQUIRED DEPENDENCY)
+    # CERT-MANAGER
+    # (SAME command you tested manually)
     # =====================================================
     - name: Install / reconcile cert-manager
       command: >
@@ -60,7 +62,8 @@
       command: kubectl get pods -n cert-manager
 
     # =====================================================
-    # AWS LOAD BALANCER CONTROLLER (ALB)
+    # AWS LOAD BALANCER CONTROLLER
+    # (SAME Helm commands you tested manually)
     # =====================================================
     - name: Add EKS Helm repo
       command: helm repo add eks https://aws.github.io/eks-charts
@@ -96,5 +99,5 @@
     # =====================================================
     # FINAL SUMMARY
     # =====================================================
-    - name: Show controller deployments
+    - name: Show kube-system deployments
       command: kubectl get deployment -n kube-system
