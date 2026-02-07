@@ -49,6 +49,36 @@
     - name: Print Ansible version
       debug:
         msg: "{{ ansible_version_output.stdout_lines[0] }}"
+        
+    # -------------------------------
+    # Helm installation (required for ALB Controller later)
+    # -------------------------------
+    - name: Check if Helm is already installed
+      command: helm version --short
+      register: helm_check
+      failed_when: false
+      changed_when: false
+
+    - name: Download Helm install script
+      get_url:
+        url: https://raw.githubusercontent.com/helm/helm/main/scripts/get-helm-3
+        dest: /tmp/get-helm-3.sh
+        mode: '0755'
+      when: helm_check.rc != 0
+
+    - name: Install Helm
+      command: /tmp/get-helm-3.sh
+      when: helm_check.rc != 0
+
+    - name: Verify Helm installation
+      command: helm version
+      register: helm_version_output
+      changed_when: false
+
+    - name: Print Helm version
+      debug:
+        msg: "{{ helm_version_output.stdout }}"
+
 
     # -------------------------------
     # kubectl installation
