@@ -1,3 +1,8 @@
+---
+# =========================================================
+# Kubernetes prerequisites
+# =========================================================
+
 - name: Install dependencies
   apt:
     name:
@@ -6,6 +11,10 @@
       - curl
     update_cache: yes
 
+# =========================================================
+# Kubernetes GPG key
+# =========================================================
+
 - name: Add Kubernetes GPG key
   shell: |
     curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.29/deb/Release.key \
@@ -13,12 +22,20 @@
   args:
     creates: /usr/share/keyrings/kubernetes-archive-keyring.gpg
 
+# =========================================================
+# Kubernetes repository
+# =========================================================
+
 - name: Add Kubernetes repo
   apt_repository:
     repo: deb [signed-by=/usr/share/keyrings/kubernetes-archive-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.29/deb/ /
     state: present
 
-- name: Install kube components
+# =========================================================
+# Install Kubernetes components
+# =========================================================
+
+- name: Install kubelet, kubeadm, kubectl
   apt:
     name:
       - kubelet
@@ -30,8 +47,46 @@
   command: apt-mark hold kubelet kubeadm kubectl
   changed_when: false
 
+# =========================================================
+# 🔑 Kubelet providerID configuration
+# =========================================================
+
+- name: Get EC2 instance ID
+  shell: curl -s http://169.254.169.254/latest/meta-data/instance-id
+  register: instance_id
+  changed_when: false
+
+- name: Get EC2 availability zone
+  shell: curl -s http://169.254.169.254/latest/meta-data/placement/availability-zone
+  register: az
+  changed_when: false
+
+- name: Configure kubelet AWS providerID
+  copy:
+    dest: /etc/default/kubelet
+    owner: root
+    group: root
+    mode: '0644'
+    content: |
+      KUBELET_EXTRA_ARGS=--cloud-provider=external --provider-id=aws:///{{ az.stdout }}/{{ instance_id.stdout }}
+  notify: Restart kubelet
+
+# =========================================================
+# Enable kubelet
+# =========================================================
+
 - name: Enable kubelet
   systemd:
     name: kubelet
     enabled: yes
 
+# =========================================================
+# Handlers (inline)
+# =========================================================
+
+handlers:
+  - name: Restart kubelet
+    systemd:
+      name: kubelet
+      state: restarted
+      daemon_reload: yes
