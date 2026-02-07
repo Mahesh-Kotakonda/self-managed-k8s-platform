@@ -1,12 +1,100 @@
 ---
-- name: Validate Kubernetes cluster from bastion
+- name: Validate Kubernetes cluster and reconcile AWS controllers
   hosts: bastion
   connection: local
   become: false
 
+  vars:
+    cluster_name: self-managed-k8s
+    alb_release_name: aws-load-balancer-controller
+    alb_namespace: kube-system
+
   tasks:
+    # =====================================================
+    # BASIC CLUSTER VALIDATION
+    # =====================================================
     - name: Check cluster nodes
       command: kubectl get nodes
 
-    - name: Check system pods
+    - name: Check kube-system pods
       command: kubectl get pods -n kube-system
+
+    # =====================================================
+    # AWS CLOUD CONTROLLER MANAGER (CCM)
+    # =====================================================
+    - name: Install / reconcile AWS Cloud Controller Manager
+      command: >
+        kubectl apply -f
+        https://raw.githubusercontent.com/kubernetes/cloud-provider-aws/master/manifests/aws-cloud-controller-manager-daemonset.yaml
+
+    - name: Wait for AWS CCM pods to be ready
+      command: >
+        kubectl wait
+        --for=condition=Ready
+        pod
+        -l k8s-app=aws-cloud-controller-manager
+        -n kube-system
+        --timeout=180s
+
+    - name: Validate AWS CCM pods
+      command: kubectl get pods -n kube-system -l k8s-app=aws-cloud-controller-manager
+
+    # =====================================================
+    # CERT-MANAGER (REQUIRED DEPENDENCY)
+    # =====================================================
+    - name: Install / reconcile cert-manager
+      command: >
+        kubectl apply -f
+        https://github.com/cert-manager/cert-manager/releases/latest/download/cert-manager.yaml
+
+    - name: Wait for cert-manager pods
+      command: >
+        kubectl wait
+        --for=condition=Ready
+        pod
+        -n cert-manager
+        --all
+        --timeout=300s
+
+    - name: Validate cert-manager pods
+      command: kubectl get pods -n cert-manager
+
+    # =====================================================
+    # AWS LOAD BALANCER CONTROLLER (ALB)
+    # =====================================================
+    - name: Add EKS Helm repo
+      command: helm repo add eks https://aws.github.io/eks-charts
+      failed_when: false
+      changed_when: false
+
+    - name: Update Helm repos
+      command: helm repo update
+      changed_when: false
+
+    - name: Install / upgrade AWS Load Balancer Controller
+      command: >
+        helm upgrade --install {{ alb_release_name }} eks/aws-load-balancer-controller
+        -n {{ alb_namespace }}
+        --create-namespace
+        --set clusterName={{ cluster_name }}
+        --set serviceAccount.create=true
+
+    - name: Wait for AWS Load Balancer Controller deployment
+      command: >
+        kubectl wait
+        --for=condition=Available
+        deployment/{{ alb_release_name }}
+        -n {{ alb_namespace }}
+        --timeout=180s
+
+    - name: Validate AWS Load Balancer Controller pods
+      command: >
+        kubectl get pods
+        -n {{ alb_namespace }}
+        -l app.kubernetes.io/name=aws-load-balancer-controller
+
+    # =====================================================
+    # FINAL SUMMARY
+    # =====================================================
+    - name: Show controller deployments
+      command: kubectl get deployment -n kube-system
