@@ -80,13 +80,3 @@
     name: kubelet
     enabled: yes
 
-# =========================================================
-# Handlers (inline)
-# =========================================================
-
-handlers:
-  - name: Restart kubelet
-    systemd:
-      name: kubelet
-      state: restarted
-      daemon_reload: yes
