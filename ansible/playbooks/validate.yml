@@ -142,5 +142,9 @@
       changed_when: false
 
     - name: Show node provider IDs
-      command: kubectl get nodes -o yaml | grep providerID
-      changed_when: false
+      command: kubectl get nodes -o jsonpath='{range .items[*]}{.metadata.name}{" => "}{.spec.providerID}{"\n"}{end}'
+      register: provider_ids
+    
+    - debug:
+        var: provider_ids.stdout
+
