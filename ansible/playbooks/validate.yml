@@ -13,57 +13,84 @@
     # =====================================================
     # BASIC CLUSTER VALIDATION
     # =====================================================
+    - name: Verify kubectl access
+      command: kubectl version --client
+      changed_when: false
+
     - name: Check cluster nodes
       command: kubectl get nodes
+      register: nodes_out
+      changed_when: false
 
     - name: Check kube-system pods
       command: kubectl get pods -n kube-system
+      changed_when: false
 
     # =====================================================
     # AWS CLOUD CONTROLLER MANAGER (CCM)
-    # (SAME command you tested manually)
     # =====================================================
     - name: Install / reconcile AWS Cloud Controller Manager
       command: >
         kubectl apply -k
         github.com/kubernetes/cloud-provider-aws/examples/existing-cluster/base/
 
-    - name: Wait for AWS CCM pods
-      command: >
-        kubectl wait
-        --for=condition=Ready
-        pod
-        -l k8s-app=aws-cloud-controller-manager
-        -n kube-system
-        --timeout=180s
+    - name: Wait until AWS CCM pods appear
+      shell: |
+        kubectl get pods -n kube-system \
+          -l k8s-app=aws-cloud-controller-manager \
+          --no-headers | wc -l
+      register: ccm_pod_count
+      retries: 18
+      delay: 10
+      until: ccm_pod_count.stdout | int > 0
+
+    - name: Wait for AWS CCM pods to be Ready
+      shell: |
+        kubectl wait pod \
+          -n kube-system \
+          -l k8s-app=aws-cloud-controller-manager \
+          --for=condition=Ready \
+          --timeout=300s
 
     - name: Validate AWS CCM pods
       command: kubectl get pods -n kube-system -l k8s-app=aws-cloud-controller-manager
+      changed_when: false
 
     # =====================================================
     # CERT-MANAGER
-    # (SAME command you tested manually)
     # =====================================================
+    - name: Ensure cert-manager namespace exists
+      command: kubectl create namespace cert-manager
+      failed_when: false
+      changed_when: false
+
     - name: Install / reconcile cert-manager
       command: >
         kubectl apply -f
         https://github.com/cert-manager/cert-manager/releases/latest/download/cert-manager.yaml
 
-    - name: Wait for cert-manager pods
-      command: >
-        kubectl wait
-        --for=condition=Ready
-        pod
-        -n cert-manager
-        --all
-        --timeout=300s
+    - name: Wait until cert-manager pods appear
+      shell: |
+        kubectl get pods -n cert-manager --no-headers | wc -l
+      register: cm_pod_count
+      retries: 18
+      delay: 10
+      until: cm_pod_count.stdout | int > 0
+
+    - name: Wait for cert-manager pods to be Ready
+      shell: |
+        kubectl wait pod \
+          -n cert-manager \
+          --all \
+          --for=condition=Ready \
+          --timeout=300s
 
     - name: Validate cert-manager pods
       command: kubectl get pods -n cert-manager
+      changed_when: false
 
     # =====================================================
     # AWS LOAD BALANCER CONTROLLER
-    # (SAME Helm commands you tested manually)
     # =====================================================
     - name: Add EKS Helm repo
       command: helm repo add eks https://aws.github.io/eks-charts
@@ -82,22 +109,38 @@
         --set clusterName={{ cluster_name }}
         --set serviceAccount.create=true
 
-    - name: Wait for AWS Load Balancer Controller deployment
-      command: >
-        kubectl wait
-        --for=condition=Available
-        deployment/{{ alb_release_name }}
-        -n {{ alb_namespace }}
-        --timeout=180s
+    - name: Wait until AWS Load Balancer Controller pods appear
+      shell: |
+        kubectl get pods -n {{ alb_namespace }} \
+          -l app.kubernetes.io/name=aws-load-balancer-controller \
+          --no-headers | wc -l
+      register: alb_pod_count
+      retries: 18
+      delay: 10
+      until: alb_pod_count.stdout | int > 0
+
+    - name: Wait for AWS Load Balancer Controller pods to be Ready
+      shell: |
+        kubectl wait pod \
+          -n {{ alb_namespace }} \
+          -l app.kubernetes.io/name=aws-load-balancer-controller \
+          --for=condition=Ready \
+          --timeout=300s
 
     - name: Validate AWS Load Balancer Controller pods
       command: >
         kubectl get pods
         -n {{ alb_namespace }}
         -l app.kubernetes.io/name=aws-load-balancer-controller
+      changed_when: false
 
     # =====================================================
     # FINAL SUMMARY
     # =====================================================
     - name: Show kube-system deployments
       command: kubectl get deployment -n kube-system
+      changed_when: false
+
+    - name: Show node provider IDs
+      command: kubectl get nodes -o yaml | grep providerID
+      changed_when: false
