@@ -307,7 +307,7 @@ resource "aws_instance" "control_plane" {
 # Worker Nodes
 ############################
 resource "aws_instance" "workers" {
-  count                  = 4
+  count                  = 2
   ami                    = data.aws_ami.ubuntu.id
   instance_type          = var.instance_type
   subnet_id              = aws_subnet.private[count.index % 2].id
@@ -322,6 +322,7 @@ resource "aws_instance" "workers" {
     "kubernetes.io/cluster/self-managed-k8s" = "owned"
   }
 }
+
 
 
 
